@@ -43,6 +43,13 @@ This project aim is to assist fellow woodworkers in creating their own cost-effe
 - SCT-013-000 Non-invasive AC Sensor with Split Core Transformer 100A
 - 3.5mm DC audio plug (male/female) to extend reach of sensor
 
+### Additional small hardware**
+- M3x6 thread inserts for 3D printing
+- M4x6 thread inserts for 3D printing
+- M3 and M4 screws for mounting
+- self-tapping screws (various sizes)
+- zip ties (a lot)
+
 ### Additional material required:
 
 - Stepper motor control wires
@@ -73,7 +80,7 @@ This project aim is to assist fellow woodworkers in creating their own cost-effe
 > **Example**  
 > For a setup with 4 gates and 3 machines the total minimal cost would be around **160EUR**
 >
-> Estimate additional 10-20% for material like wires, hear shrinks, etc.
+> Estimate additional 10-20% for material like wires, heat shrinks, screws, etc.
 
 ## Limitations
 
