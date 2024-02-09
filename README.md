@@ -17,8 +17,6 @@ This project aim is to assist fellow woodworkers in creating their own cost-effe
 
 > Excluded the dust collection system and manual gates
 
-
-
 ### Control centre:
 
 - Arduino Mega 2560
@@ -52,6 +50,7 @@ This project aim is to assist fellow woodworkers in creating their own cost-effe
 - Soldering wire / heat shrinks ...
 
 ## Estimated cost (minimal)
+
 > Costs were estimated on Feb. 2024
 
 | Item                             | Approximate price                                 |
@@ -59,13 +58,15 @@ This project aim is to assist fellow woodworkers in creating their own cost-effe
 | Arduino Mega                     | 38 EUR                                            |
 | Ramps 1.4                        | 9 EUR                                             | 
 | DRV8825 Step Motor Driver Module | 15 EUR pack of 5 (3 EUR per driver)               |
+| voltage regulation components    | 5 EUR                                             |
 | DC 12V 10A power supply          | 20 EUR                                            |
+|                                  |                                                   |
 | Nema 17 stepper motor            | 35 EUR pack of 5 (7 EUR per motor)                |
 | Micro Limit Switch               | 16 EUR pack of 10 (1.6 EUR per switch)            |
 | Stepper motor cables (2m)        | 10 EUR pack of 6 (1.5+ EUR per cable)             |
+|                                  |                                                   |
 | 3.5 audio plugs                  | 9 EUR pack of 10 (1 EUR per plug)                 |
 | SCT-013-000 AC sensor            | 10 EUR                                            |
-| voltage regulation components    | 5 EUR                                             |
 |                                  |                                                   |
 | **Total minimal cost**:          | 71 EUR + (14 EUR per gate) + (11 EUR per machine) |
 

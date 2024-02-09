@@ -69,7 +69,7 @@ void setup() {
   // Wait until measurements get down low levels (no machine should be running)
   sampleConsumption();
 
-  // close all gates (initialize to 0)
+  // close all 3D_print (initialize to 0)
   while (!allGatesClosed() || !noMachineRunning()) {
     if (!allGatesClosed()) {
       gateA.closeGate();
@@ -78,7 +78,7 @@ void setup() {
       gateD.closeGate();
 
       if (allGatesClosed()) {
-        debugln("Gates initialized - all gates closed");
+        debugln("Gates initialized - all 3D_print closed");
       }
     }
 
@@ -96,8 +96,8 @@ void setup() {
 
 void loop() {
 
-  // measure current only when gates are not in movement 
-  // otherwise the gates will move very slow as measuring takes a lot of time
+  // measure current only when 3D_print are not in movement
+  // otherwise the 3D_print will move very slow as measuring takes a lot of time
   if (gatesAreNotMoving()) {
 
     sampleConsumption();
