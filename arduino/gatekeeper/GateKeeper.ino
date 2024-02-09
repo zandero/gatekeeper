@@ -1,6 +1,17 @@
 #include "BlastGate.h"
 #include "MachineMonitor.h"
 
+// Added for easier debug on/off of serial messages
+// (set DEBUG=false) once everything is running as expected (but can be left on DEBUG=true - does not affect the functionality)
+#define DEBUG true
+#ifdef DEBUG == true
+  #define debug(x) Serial.print(x)
+  #define debugln(x) Serial.println(x)
+#else
+  #define debug(x)
+  #define debugln(x)
+#endif
+
 // Machine energy monitors
 #define JOINTER_PIN 3           // A3 (red)
 #define CIRCULAR_SAW_PIN 4      // A4 (yellow)
@@ -31,30 +42,34 @@
 
 // motor speed and max open position
 #define MAX_MOTOR_SPEED 800L
-#define OPEN_ROTATION 700L
+#define OPEN_ROTATION 1425L
 
-// Current calculations and levels 
+// Max amperage level for each machine
 #define CIRCULAR_SAW_RUNNING 12
 #define JOINTER_RUNNING 14
 #define BAND_SAW_RUNNING 3.5
 
-// Initialize gates, which motor us linked to witch switch
+// Associate motor and gate switches
 BlastGate gateA(MOTOR_A_ENABLE_PIN, MOTOR_A_STEP_PIN, MOTOR_A_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_A);
 BlastGate gateB(MOTOR_B_ENABLE_PIN, MOTOR_B_STEP_PIN, MOTOR_B_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_B);
 BlastGate gateC(MOTOR_C_ENABLE_PIN, MOTOR_C_STEP_PIN, MOTOR_C_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_C);
 BlastGate gateD(MOTOR_D_ENABLE_PIN, MOTOR_D_STEP_PIN, MOTOR_D_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_D);
 
-// Initialize current monitors
+// Set max amperage levels for each machine
 MachineMonitor jointer(JOINTER_PIN, JOINTER_RUNNING);
 MachineMonitor bandSaw(BAND_SAW_PIN, BAND_SAW_RUNNING);
 MachineMonitor circularSaw(CIRCULAR_SAW_PIN, CIRCULAR_SAW_RUNNING);
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Starting up ... ");
+  if (DEBUG) {
+    Serial.begin(9600);
+    debugln("Starting up ... ");
+  }
 
+  // Wait until measurements get down low levels (no machine should be running)
   sampleConsumption();
 
+  // close all gates (initialize to 0)
   while (!allGatesClosed() || !noMachineRunning()) {
     if (!allGatesClosed()) {
       gateA.closeGate();
@@ -63,20 +78,21 @@ void setup() {
       gateD.closeGate();
 
       if (allGatesClosed()) {
-        Serial.println("Gates initialized - all gates closed");
+        debugln("Gates initialized - all gates closed");
       }
     }
 
     if (!noMachineRunning()) {
       sampleConsumption();
       if (noMachineRunning()) {
-        Serial.println("Energy monitoring initialized");
+        debugln("Energy monitoring initialized");
       }
     }
   }
 
-  Serial.println("Initialization finished");
+  debugln("Initialization finished");
 }
+
 
 void loop() {
 
@@ -86,19 +102,22 @@ void loop() {
 
     sampleConsumption();
 
+    /* This part is only for logging and debugging purposes */
     if (jointer.isRunning() && !jointerGatesOpen()) {
-      Serial.println("Jointer running - trigger open B / D, close A / C");
+      debugln("Jointer running - trigger open B / D, close A / C");
     }
 
     if (circularSaw.isRunning() && !circularSawGatesOpen()) {
-      Serial.println("Circular saw running - trigger open A, close B");
+      debugln("Circular saw running - trigger open A, close B");
     }
 
     if (bandSaw.isRunning() && !bandSawGatesOpen()) {
-      Serial.println("Band saw running - trigger open B / C, close A / D");
+      debugln("Band saw running - trigger open B / C, close A / D");
     }
   }
-  
+
+  // The logic - set position of each gate if a machine is running
+  // NOTE: It is assumed that only one machine is running!
   if (circularSaw.isRunning()) {
     gateA.openGate();
     gateB.closeGate();
@@ -119,6 +138,7 @@ void loop() {
   }
 }
 
+/** HELPER METHODS **/
 bool jointerGatesOpen() {
   return gateA.isClosed() && 
          gateB.isOpen() && 
