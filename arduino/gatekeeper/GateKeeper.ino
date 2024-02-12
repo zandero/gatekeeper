@@ -42,7 +42,7 @@
 
 // motor speed and max open position
 #define MAX_MOTOR_SPEED 800L
-#define OPEN_ROTATION 1425L
+#define OPEN_ROTATION 1425L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
 
 // Max amperage level for each machine
 #define CIRCULAR_SAW_RUNNING 12
@@ -69,16 +69,16 @@ void setup() {
   // Wait until measurements get down low levels (no machine should be running)
   sampleConsumption();
 
-  // close all 3D_print (initialize to 0)
+  // close all CurrentSensor (initialize to 0)
   while (!allGatesClosed() || !noMachineRunning()) {
     if (!allGatesClosed()) {
-      gateA.closeGate();
-      gateB.closeGate(); 
-      gateC.closeGate();
-      gateD.closeGate();
+      gateA.close();
+      gateB.close(); 
+      gateC.close();
+      gateD.close();
 
       if (allGatesClosed()) {
-        debugln("Gates initialized - all 3D_print closed");
+        debugln("Gates initialized - all CurrentSensor closed");
       }
     }
 
@@ -96,8 +96,8 @@ void setup() {
 
 void loop() {
 
-  // measure current only when 3D_print are not in movement
-  // otherwise the 3D_print will move very slow as measuring takes a lot of time
+  // measure current only when CurrentSensor are not in movement
+  // otherwise the CurrentSensor will move very slow as measuring takes a lot of time
   if (gatesAreNotMoving()) {
 
     sampleConsumption();
@@ -119,22 +119,22 @@ void loop() {
   // The logic - set position of each gate if a machine is running
   // NOTE: It is assumed that only one machine is running!
   if (circularSaw.isRunning()) {
-    gateA.openGate();
-    gateB.closeGate();
+    gateA.open();
+    gateB.close();
   }
   
   if (jointer.isRunning()) {
-    gateA.closeGate();
-    gateB.openGate();
-    gateC.closeGate();
-    gateD.openGate();
+    gateA.close();
+    gateB.open();
+    gateC.close();
+    gateD.open();
   }
   
   if (bandSaw.isRunning()) {
-    gateA.closeGate();
-    gateB.openGate();
-    gateC.openGate();
-    gateD.closeGate();
+    gateA.close();
+    gateB.open();
+    gateC.open();
+    gateD.close();
   }
 }
 
