@@ -44,6 +44,7 @@
 // motor speed and max open position
 #define MAX_MOTOR_SPEED 800L
 #define OPEN_ROTATION 1425L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
+// if you are using some other driver and stepper motors this value might be different
 
 // Max amperage level for each machine
 #define CIRCULAR_SAW_RUNNING 12
@@ -116,7 +117,7 @@ void setup() {
   // Wait until measurements get down low levels (no machine should be running)
   sampleConsumption();
 
-  // close all CurrentSensor (initialize to 0)
+  // close all gates (initialize to 0)
   while (!allGatesClosed() || !noMachineRunning()) {
     if (!allGatesClosed()) {
       gateA.close();
@@ -125,7 +126,7 @@ void setup() {
       gateD.close();
 
       if (allGatesClosed()) {
-        debugln("Gates initialized - all CurrentSensor closed");
+        debugln("Gates initialized - all gates are closed");
       }
     }
 
@@ -143,8 +144,8 @@ void setup() {
 
 void loop() {
 
-  // measure current only when CurrentSensor are not in movement
-  // otherwise the CurrentSensor will move very slow as measuring takes a lot of time
+  // measure current only when gates are not in movement
+  // otherwise the gates will move very slow as measuring takes a lot of time
   if (gatesAreNotMoving()) {
 
     sampleConsumption();
