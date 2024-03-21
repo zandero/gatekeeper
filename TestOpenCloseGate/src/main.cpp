@@ -40,7 +40,7 @@ void setup() {
 void loop() {
 
   if (gateA.isMoving()) {
-    debugln("Opening gate ... ");
+    debugln("Gate is moving ... ");
   }
 
   if (gateA.isClosed()) {
@@ -52,7 +52,5 @@ void loop() {
   }
 
   gateA.open();
-
-  
 }
 
