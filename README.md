@@ -2,10 +2,17 @@
 
 This project aim is to assist fellow woodworkers in creating their own cost-effective automated blast gates.
 
-## Operation
+> **NOTE: This is quite an involved build.**  
+> Apart from the hardware, you will also need:
+> - to 3D print some parts (or design your own)   
+> - Solder and connect all parts together
+> - Measure current/voltage of the stepper motor drivers to trim them  
+> - Modify the main.cpp code to fit your setup (see below)
 
-- Monitor the operating status of machines through a current measuring sensor.
-- Activate/deactivate the relevant gate(s) based on the specific machine in use.
+# How does it work / operation
+The Arduino board 
+- Monitors the operating status of machines through a current measuring sensor.
+- Activates/deactivates the relevant blast gate(s) based on the specific machine in use - i.e. signals the stepper motors to open/close a gate.
 - Maintain the gate(s) in the opened or closed position until another machine is powered on.
 
 ## Capabilities
@@ -78,17 +85,41 @@ This project aim is to assist fellow woodworkers in creating their own cost-effe
 > For a setup with 4 gates and 3 machines the total minimal cost would be around **160EUR**
 >
 > Estimate additional 10-20% for material like wires, heat shrinks, screws, etc.
+> 
+> Costs can vary vastly depending on where you source your materials (this is just a ballpark estimation) 
 
 ## Limitations
 
 The main limitation of this setup is the distance between the blast gate and the control centre (i.e. Arduino board)
 
 I have been only able to find stepper motor cables that are 2m long - limiting the max distance between gates to 4m (13
-feet). One can probably make their own stepper motor cables that are longer - not sure what the maximum length could be.
+feet). One can probably make your own stepper motor cables that are longer - not sure what the maximum length could be.
 
 The machine monitoring cables run im my case up to 10m long without any issues.
 
-# #1 Current/voltage detection
+# Getting started (the software)
+
+Install all needed software:
+- [Download and install git](https://git-scm.com/downloads) 
+- checkout project from GitHub  
+  > git clone https://github.com/zandero/gatekeeper.git
+- install [Visual Studio Code](https://code.visualstudio.com/download)
+- add [PlatformIO](https://platformio.org/install/ide?install=vscode) plugin to `Visual Studio Code`
+
+
+## Setup main.cpp 
+In order to make things work correctly you will need to modify the main logic in [main.cpp](./src/GateKeeper/main.cpp) according to your setup
+
+- define energy monitoring pin(s) (JOINTER_PIN, CIRCULAR_SAW_PIN, ...)
+- define the voltage/amperage limit when gate should move (MOTOR_A_STEP_PIN 54, MOTOR_A_DIR_PIN 55, MOTOR_A_ENABLE_PIN, ...) 
+- define gate close switch and motor pin(s) (SWITCH_GATE_A, ...), 
+
+### Alter helper functions according to your setup
+
+
+# The hardware
+
+## #1 Current/voltage detection
 In order to accurately detect if a machine is running the output signal from the CT sensor needs to be conditioned, so it 
 meets the input requirements of the Arduino analog inputs, i.e. a positive voltage between 0V and the ADC reference voltage.
 
@@ -97,10 +128,10 @@ meets the input requirements of the Arduino analog inputs, i.e. a positive volta
 Assuming only one machine will be running at once / multiple sensors can be connected to the same circuit.   
 If you are planing to run multiple machines simultaneously you will need to provide on circuit for each sensor.
 
-# #2 Defining motor rotation and travel
-## Stepper motor rotation
+## #2 Defining motor rotation and travel
+### Stepper motor rotation
 
-## Tuning the stepper drivers
+### Tuning the stepper drivers
 If the stepper motors can't push the gate to close/open (they are skipping steps) we might need to boost the stepper driver voltage.
 This will happen if the gates are mounted in such way that the motors must also resist the force of gravity i.e. gates are mounted vertically.
 
@@ -111,5 +142,5 @@ See the following guides:
 
 > Example: for a **1.7A** NEMA motor you will shoot for **0.85V** 
 
-# #3 Putting all together 
+## #3 Putting it all together 
 Putting it all together

@@ -62,7 +62,8 @@ MachineMonitor jointer(JOINTER_PIN, JOINTER_RUNNING);
 MachineMonitor bandSaw(BAND_SAW_PIN, BAND_SAW_RUNNING);
 MachineMonitor circularSaw(CIRCULAR_SAW_PIN, CIRCULAR_SAW_RUNNING);
 
-/** HELPER METHODS **/
+/** HELPER METHODS / alter according to your setup **/
+/** Jointer line gates are OPEN, **/
 bool jointerGatesOpen() {
   return gateA.isClosed() && 
          gateB.isOpen() && 
@@ -82,6 +83,7 @@ bool circularSawGatesOpen() {
          gateB.isClosed();
 }
 
+/** All gates are closed (needed on startup to)  **/
 bool allGatesClosed() {
   return gateA.isClosed() && 
          gateB.isClosed() &&
@@ -89,6 +91,7 @@ bool allGatesClosed() {
          gateD.isClosed();
 }
 
+/** Gate are not moving (each gate is either fully open or closed) **/
 bool gatesAreNotMoving() {
   return !gateA.isMoving() && 
          !gateB.isMoving() && 
@@ -96,12 +99,14 @@ bool gatesAreNotMoving() {
          !gateD.isMoving();
 }
 
+/** add here all MachineMonitor listeners **/
 void sampleConsumption() {
   jointer.sample();
   bandSaw.sample();
   circularSaw.sample();
 }
 
+/** no machine is running (cunsumption is 'zero') **/
 bool noMachineRunning() {
   return !jointer.isRunning() && 
          !circularSaw.isRunning() && 
