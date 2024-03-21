@@ -106,16 +106,33 @@ Install all needed software:
 - install [Visual Studio Code](https://code.visualstudio.com/download)
 - add [PlatformIO](https://platformio.org/install/ide?install=vscode) plugin to `Visual Studio Code`
 
-
 ## Setup main.cpp 
-In order to make things work correctly you will need to modify the main logic in [main.cpp](./src/GateKeeper/main.cpp) according to your setup
+In order to make things work correctly you will need to modify the main logic in [main.cpp](./GateKeeper/src/main.cpp) according to your setup
 
-- define energy monitoring pin(s) (JOINTER_PIN, CIRCULAR_SAW_PIN, ...)
-- define the voltage/amperage limit when gate should move (MOTOR_A_STEP_PIN 54, MOTOR_A_DIR_PIN 55, MOTOR_A_ENABLE_PIN, ...) 
-- define gate close switch and motor pin(s) (SWITCH_GATE_A, ...), 
+- define energy monitoring pin(s) (`JOINTER_PIN`, `CIRCULAR_SAW_PIN`, ...)
+- define the voltage/amperage limit when gate should move (`MOTOR_A_STEP_PIN`, `MOTOR_A_DIR_PIN`, `MOTOR_A_ENABLE_PIN`, ...) 
+- define gate close switch and motor pin(s) (`SWITCH_GATE_A`, ...), 
 
 ### Alter helper functions according to your setup
 
+
+# The logic
+
+## setup()
+
+In the `setup()` step the gates and energy monitoring is initialized.   
+The code "waits" until all:
+- energy monitors report a value below the given threshold (i.e. all machine must be turned off)
+- and all gates report that they are closed (all gete close switches are engaged)
+
+## loop()
+
+Once the initial state (all gates closed, no machine running) is detected the code "monitors" each machine consumption.  
+Once a spike in consumption is detected (i.e. a machine is running) the appropriate gates are opened/closed.
+
+> NOTE: once gates are in movement energy monitoring is suspended. 
+> This is due to the very slow operation of consumption check. 
+> Only when all gates finish their move the energy monitoring is resumed.
 
 # The hardware
 
@@ -142,5 +159,13 @@ See the following guides:
 
 > Example: for a **1.7A** NEMA motor you will shoot for **0.85V** 
 
-## #3 Putting it all together 
+## #3 Defining machine consumption threshold 
+
+## #4 Build a simple one gate one machine prototype
+Before venturing on a full build it is recommended to check if every component is working as expected by building a simple prototype.
+
+
+## #5 Putting it all together 
+
+
 Putting it all together
