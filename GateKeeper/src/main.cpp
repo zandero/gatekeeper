@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "BlastGate.h"
 #include "MachineMonitor.h"
+#include "BlinkLight.h"
 
 // Added for easier debug on/off of serial messages
 // (set DEBUG=false) once everything is running as expected (but can be left on DEBUG=true - does not affect the functionality)
@@ -42,14 +43,21 @@
 #define MOTOR_D_ENABLE_PIN 24
 
 // motor speed and max open position
-#define MAX_MOTOR_SPEED 800L
-#define OPEN_ROTATION 1425L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
+#define MAX_MOTOR_SPEED 700L
+#define OPEN_ROTATION 1250L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
 // if you are using some other driver and stepper motors this value might be different
 
 // Max amperage level for each machine
 #define CIRCULAR_SAW_RUNNING 12
 #define JOINTER_RUNNING 14
 #define BAND_SAW_RUNNING 3.5
+
+// Led lights PINs by gate
+#define LED_PIN_A 16
+#define LED_PIN_B 17
+#define LED_PIN_C 23
+#define LED_PIN_D 25
+#define LED_BLINK_MS 75
 
 // Associate motor and gate switches
 BlastGate gateA(MOTOR_A_ENABLE_PIN, MOTOR_A_STEP_PIN, MOTOR_A_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_A);
@@ -61,6 +69,16 @@ BlastGate gateD(MOTOR_D_ENABLE_PIN, MOTOR_D_STEP_PIN, MOTOR_D_DIR_PIN, OPEN_ROTA
 MachineMonitor jointer(JOINTER_PIN, JOINTER_RUNNING);
 MachineMonitor bandSaw(BAND_SAW_PIN, BAND_SAW_RUNNING);
 MachineMonitor circularSaw(CIRCULAR_SAW_PIN, CIRCULAR_SAW_RUNNING);
+
+// Optional gate light indicators 
+// Closed = Led on
+// Moving = Led blinking
+// Open   = Led off
+BlinkLight gateLightA(LED_PIN_A, LED_BLINK_MS);
+BlinkLight gateLightB(LED_PIN_B, LED_BLINK_MS);
+BlinkLight gateLightC(LED_PIN_C, LED_BLINK_MS);
+BlinkLight gateLightD(LED_PIN_D, LED_BLINK_MS);
+
 
 /** HELPER METHODS / alter according to your setup **/
 /** Jointer line gates are OPEN, **/
@@ -113,7 +131,60 @@ bool noMachineRunning() {
          !bandSaw.isRunning();
 }
 
+void updateLights() {
+
+  if (gateA.isClosed()) {
+    gateLightA.on();
+  }
+  else if (gateA.isMoving()) {
+    gateLightA.blink();
+  }
+  else {
+    gateLightA.off();
+  }
+
+  //
+  if (gateB.isClosed()) {
+    gateLightB.on();
+  }
+  else if (gateB.isMoving()) {
+    gateLightB.blink();
+  }
+  else {
+    gateLightB.off();
+  }
+
+  //
+  if (gateC.isClosed()) {
+    gateLightC.on();
+  }
+  else if (gateC.isMoving()) {
+    gateLightC.blink();
+  }
+  else {
+    gateLightC.off();
+  }
+
+  //
+  if (gateD.isClosed()) {
+    gateLightD.on();
+  }
+  else if (gateD.isMoving()) {
+    gateLightD.blink();
+  }
+  else {
+    gateLightD.off();
+  }
+
+  gateLightA.update();
+  gateLightB.update();
+  gateLightC.update();
+  gateLightD.update();
+}
+
+
 void setup() {
+
   if (DEBUG) {
     Serial.begin(9600);
     debugln("Starting up GateKeeper ... ");
@@ -124,18 +195,22 @@ void setup() {
 
   // close all gates (initialize to 0)
   while (!allGatesClosed() || !noMachineRunning()) {
+
+    updateLights();
+
     if (!allGatesClosed()) {
+      
       gateA.close();
       gateB.close(); 
       gateC.close();
       gateD.close();
-
+      
       if (allGatesClosed()) {
-        debugln("Gates initialized - all gates are closed");
+        debugln("Gates initialized - all gates are closed");                  
       }
     }
 
-    if (!noMachineRunning()) {
+    if (!noMachineRunning()) {      
       sampleConsumption();
       if (noMachineRunning()) {
         debugln("Energy monitoring initialized");
@@ -149,10 +224,12 @@ void setup() {
 
 void loop() {
 
+  updateLights();
+
   // measure current only when gates are not in movement
   // otherwise the gates will move very slow as measuring takes a lot of time
   if (gatesAreNotMoving()) {
-
+  
     sampleConsumption();
 
     /* This part is only for logging and debugging purposes */

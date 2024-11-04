@@ -20,7 +20,7 @@ BlastGate::BlastGate(uint8_t _motorEnablePin, uint8_t _motorStepPin, uint8_t _mo
 void BlastGate::close() {
   if (!isClosed()) { 
     motor.setSpeed(MAX_MOTOR_SPEED);
-    motor.moveTo(-2 * gateOpenPosition); 
+    motor.moveTo(-3 * gateOpenPosition); 
     motor.runSpeedToPosition();
   }
   else {
