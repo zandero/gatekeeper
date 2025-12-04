@@ -106,6 +106,10 @@ Install all needed software:
 - install [Visual Studio Code](https://code.visualstudio.com/download)
 - add [PlatformIO](https://platformio.org/install/ide?install=vscode) plugin to `Visual Studio Code`
 
+## Build the project
+
+
+
 ## Setup main.cpp 
 In order to make things work correctly you will need to modify the main logic in [main.cpp](./GateKeeper/src/main.cpp) according to your setup
 
