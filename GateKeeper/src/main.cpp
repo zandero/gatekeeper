@@ -44,8 +44,8 @@
 
 // motor speed and max open position
 #define MAX_MOTOR_SPEED 700L
-#define OPEN_ROTATION 1250L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
-#define OPEN_ROTATION_NEW 2000L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
+#define OPEN_ROTATION 7000L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
+
 // if you are using some other driver and stepper motors this value might be different
 
 // Max amperage level for each machine
@@ -61,10 +61,10 @@
 #define LED_BLINK_MS 75
 
 // Associate motor and gate switches
-BlastGate gateA(MOTOR_A_ENABLE_PIN, MOTOR_A_STEP_PIN, MOTOR_A_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_A, false);
+BlastGate gateA(MOTOR_A_ENABLE_PIN, MOTOR_A_STEP_PIN, MOTOR_A_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_A, true);
 BlastGate gateB(MOTOR_B_ENABLE_PIN, MOTOR_B_STEP_PIN, MOTOR_B_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_B, true);
-BlastGate gateC(MOTOR_C_ENABLE_PIN, MOTOR_C_STEP_PIN, MOTOR_C_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_C, false);
-BlastGate gateD(MOTOR_D_ENABLE_PIN, MOTOR_D_STEP_PIN, MOTOR_D_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_D, false);
+BlastGate gateC(MOTOR_C_ENABLE_PIN, MOTOR_C_STEP_PIN, MOTOR_C_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_C, true);
+BlastGate gateD(MOTOR_D_ENABLE_PIN, MOTOR_D_STEP_PIN, MOTOR_D_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_D, true);
 
 // Set max amperage levels for each machine
 MachineMonitor jointer(JOINTER_PIN, JOINTER_RUNNING);

@@ -2,7 +2,8 @@
 #include <AccelStepper.h>
 #include "BlastGate.h"
 
-#define MOVE_FACTOR 3
+#define MOVE_FACTOR 1
+#define MOVE_FACTOR_CLOSE 3
 
 BlastGate::BlastGate(uint8_t _motorEnablePin, uint8_t _motorStepPin, uint8_t _motorDirectionPin, long _gateOpenPosition, uint8_t _gateClosedSwitchPin, bool _invertDirection) {
   gateClosedSwitchPin = _gateClosedSwitchPin;
@@ -27,10 +28,10 @@ void BlastGate::close() {
     motor.setSpeed(MAX_MOTOR_SPEED);
 
     if (invertDirection) {
-      motor.moveTo(MOVE_FACTOR * gateOpenPosition); 
+      motor.moveTo(MOVE_FACTOR_CLOSE * gateOpenPosition); 
     }
     else {
-      motor.moveTo(-MOVE_FACTOR * gateOpenPosition); 
+      motor.moveTo(- MOVE_FACTOR_CLOSE * gateOpenPosition); 
     }
   
     motor.runSpeedToPosition();
@@ -44,7 +45,7 @@ void BlastGate::open() {
   if (!isOpen()) {
     motor.setSpeed(MAX_MOTOR_SPEED);
     if (invertDirection) {
-      motor.moveTo(-MOVE_FACTOR * gateOpenPosition); 
+      motor.moveTo(- MOVE_FACTOR * gateOpenPosition); 
     }
     else {
       motor.moveTo(MOVE_FACTOR * gateOpenPosition); 
@@ -59,15 +60,15 @@ bool BlastGate::isClosed() {
 
 bool BlastGate::isOpen() {
   if (invertDirection) {
-    return motor.currentPosition() == -gateOpenPosition;
+    return motor.currentPosition() == - MOVE_FACTOR * gateOpenPosition;
   }
-  return motor.currentPosition() == gateOpenPosition;
+  return motor.currentPosition() == MOVE_FACTOR * gateOpenPosition;
 }
 
 bool BlastGate::isMoving() {
   if (invertDirection) {
-    return motor.currentPosition() < 0 && motor.currentPosition() > -gateOpenPosition;
+    return motor.currentPosition() < 0 && motor.currentPosition() > - MOVE_FACTOR * gateOpenPosition;
   }
-  return motor.currentPosition() > 0 && motor.currentPosition() < gateOpenPosition;
+  return motor.currentPosition() > 0 && motor.currentPosition() < MOVE_FACTOR * gateOpenPosition;
 }
 
