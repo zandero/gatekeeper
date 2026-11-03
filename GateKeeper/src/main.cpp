@@ -3,10 +3,12 @@
 #include "MachineMonitor.h"
 #include "BlinkLight.h"
 
-// Added for easier debug on/off of serial messages
-// (set DEBUG=false) once everything is running as expected (but can be left on DEBUG=true - does not affect the functionality)
-#define DEBUG true
-#ifdef DEBUG == true
+// Debug on/off of serial messages is set in platformio.ini (build_flags = -D DEBUG=1 / -D DEBUG=0)
+// so it applies to main.cpp and the libraries (e.g. MachineMonitor consumption logging)
+#ifndef DEBUG
+  #define DEBUG 0
+#endif
+#if DEBUG
   #define debug(x) Serial.print(x)
   #define debugln(x) Serial.println(x)
 #else
@@ -43,13 +45,12 @@
 #define MOTOR_D_ENABLE_PIN 24
 
 // motor speed and max open position
-#define MAX_MOTOR_SPEED 700L
 #define OPEN_ROTATION 7000L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
 
 // if you are using some other driver and stepper motors this value might be different
 
 // Max amperage level for each machine
-#define CIRCULAR_SAW_RUNNING 12
+#define CIRCULAR_SAW_RUNNING 8
 #define JOINTER_RUNNING 14
 #define BAND_SAW_RUNNING 3.5
 
@@ -60,6 +61,9 @@
 #define LED_PIN_D 27
 #define LED_BLINK_MS 75
 
+// limit switches must read "pressed" this long before startup trusts that all gates are closed
+#define SWITCH_SETTLE_MS 100
+
 // Associate motor and gate switches
 BlastGate gateA(MOTOR_A_ENABLE_PIN, MOTOR_A_STEP_PIN, MOTOR_A_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_A, true);
 BlastGate gateB(MOTOR_B_ENABLE_PIN, MOTOR_B_STEP_PIN, MOTOR_B_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_B, true);
@@ -67,9 +71,9 @@ BlastGate gateC(MOTOR_C_ENABLE_PIN, MOTOR_C_STEP_PIN, MOTOR_C_DIR_PIN, OPEN_ROTA
 BlastGate gateD(MOTOR_D_ENABLE_PIN, MOTOR_D_STEP_PIN, MOTOR_D_DIR_PIN, OPEN_ROTATION, SWITCH_GATE_D, true);
 
 // Set max amperage levels for each machine
-MachineMonitor jointer(JOINTER_PIN, JOINTER_RUNNING);
-MachineMonitor bandSaw(BAND_SAW_PIN, BAND_SAW_RUNNING);
-MachineMonitor circularSaw(CIRCULAR_SAW_PIN, CIRCULAR_SAW_RUNNING);
+MachineMonitor jointer("Jointer", JOINTER_PIN, JOINTER_RUNNING);
+MachineMonitor bandSaw("Band saw", BAND_SAW_PIN, BAND_SAW_RUNNING);
+MachineMonitor circularSaw("Circular saw", CIRCULAR_SAW_PIN, CIRCULAR_SAW_RUNNING);
 
 // Optional gate light indicators 
 // Closed = Led on
@@ -184,6 +188,27 @@ void updateLights() {
 }
 
 
+#if DEBUG
+void debugGate(const char* name, BlastGate &gate) {
+  debug(name);
+  debug(" pos=");
+  debug(gate.getPosition());
+  debug(gate.isClosed() ? " switch=PRESSED" : " switch=free");
+  debug(gate.isOpen() ? " open" : "");
+  debug(gate.isMoving() ? " moving" : "");
+  debug(" | ");
+}
+
+/** prints position / state of all gates (target open position is -OPEN_ROTATION for inverted gates) */
+void debugGates() {
+  debugGate("A", gateA);
+  debugGate("B", gateB);
+  debugGate("C", gateC);
+  debugGate("D", gateD);
+  debugln("");
+}
+#endif
+
 void setup() {
 
   if (DEBUG) {
@@ -195,7 +220,16 @@ void setup() {
   sampleConsumption();
 
   // close all gates (initialize to 0)
-  while (!allGatesClosed() || !noMachineRunning()) {
+  // A limit switch can bounce while it is being pressed, so a single "closed" reading is not trusted:
+  // all switches must stay pressed for SWITCH_SETTLE_MS, otherwise the gates keep closing
+  while (true) {
+
+    if (allGatesClosed() && noMachineRunning()) {
+      delay(SWITCH_SETTLE_MS);
+      if (allGatesClosed()) {
+        break;
+      }
+    }
 
     updateLights();
 
@@ -219,7 +253,16 @@ void setup() {
     }
   }
 
+  // all switches are pressed -> this is position 0 for every gate
+  gateA.resetPosition();
+  gateB.resetPosition();
+  gateC.resetPosition();
+  gateD.resetPosition();
+
   debugln("Initialization finished");
+#if DEBUG
+  debugGates();
+#endif
 }
 
 
@@ -240,6 +283,9 @@ void loop() {
 
     if (circularSaw.isRunning() && !circularSawGatesOpen()) {
       debugln("Circular saw running - trigger open A, close B");
+#if DEBUG
+      debugGates();
+#endif
     }
 
     if (bandSaw.isRunning() && !bandSawGatesOpen()) {

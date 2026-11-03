@@ -2,6 +2,7 @@
 #include <AccelStepper.h>
 #include "BlastGate.h"
 
+#define MAX_MOTOR_SPEED 2400L
 #define MOVE_FACTOR 1
 #define MOVE_FACTOR_CLOSE 3
 
@@ -36,8 +37,11 @@ void BlastGate::close() {
   
     motor.runSpeedToPosition();
   }
-  else {
-    motor.setCurrentPosition(0);  // reset position to zero once closed
+
+  // reset position to zero as soon as the switch is pressed
+  // (also right after the step that closed the gate, the caller might never call close() again)
+  if (isClosed()) {
+    motor.setCurrentPosition(0);
   }
 }
 
@@ -72,3 +76,11 @@ bool BlastGate::isMoving() {
   return motor.currentPosition() > 0 && motor.currentPosition() < MOVE_FACTOR * gateOpenPosition;
 }
 
+
+long BlastGate::getPosition() {
+  return motor.currentPosition();
+}
+
+void BlastGate::resetPosition() {
+  motor.setCurrentPosition(0);
+}

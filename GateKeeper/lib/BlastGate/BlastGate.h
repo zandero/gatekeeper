@@ -3,8 +3,6 @@
 
 #include <AccelStepper.h>
 
-#define MAX_MOTOR_SPEED 2400L
-
 /**
  * Simplifies logic of stepper motor movement with open/close commands
  */
@@ -57,6 +55,16 @@ class BlastGate
      * @return true if gate is either being opened or closed, false get is open or closed
      */
     bool isMoving();
+
+    /**
+     * Marks the current position as closed (0), call once the gate switch is confirmed pressed
+     */
+    void resetPosition();
+
+    /**
+     * @return current stepper motor position (0 = closed), for debugging
+     */
+    long getPosition();
 };
 
 #endif
