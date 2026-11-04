@@ -150,6 +150,15 @@ Assuming only one machine will be running at once / multiple sensors can be conn
 If you are planing to run multiple machines simultaneously you will need to provide on circuit for each sensor.
 
 ## #2 Defining motor rotation and travel
+Before you run the full GateKeeper firmware, test each gate on its own with the
+[TestOpenCloseGate](./TestOpenCloseGate/README.md) sample. It moves a single gate fully closed and fully open, again and again,
+and helps you set:
+- `INVERT_MOTOR_DIRECTION`: the motor spin direction
+- `OPEN_ROTATION`: how many steps open the gate fully
+- the gate close switch wiring
+
+See the [TestOpenCloseGate README](./TestOpenCloseGate/README.md) for the step-by-step procedure.
+
 ### Stepper motor rotation
 
 ### Tuning the stepper drivers
@@ -164,12 +173,61 @@ See the following guides:
 > Example: for a **1.7A** NEMA motor you will shoot for **0.85V** 
 
 ## #3 Defining machine consumption threshold 
+Each machine needs a current threshold (`JOINTER_RUNNING`, `CIRCULAR_SAW_RUNNING`, ...
+in [main.cpp](./GateKeeper/src/main.cpp)). A machine counts as running when its reading is above this value.
+Measure it for each machine with the [TestMachineConsumption](./TestMachineConsumption/README.md) sample:
+
+1. Connect a single CT sensor around **one** conductor of the machine's supply, and set `MACHINE_PIN`.
+2. Upload the sample and open the serial monitor (9600 baud).
+3. Note the highest reading with the machine **off**, and the lowest reading with the machine **on** (idle, not cutting).
+4. Set the threshold about halfway between the two, and check that `running` switches reliably as you turn the machine on and off.
+5. Copy the value into GateKeeper `main.cpp`.
+
+See the [TestMachineConsumption README](./TestMachineConsumption/README.md) for the full procedure.
 
 ## #4 Build a simple one gate one machine prototype
 Before venturing on a full build it is recommended to check if every component is working as expected by building a simple prototype.
 
 
 ## #5 Putting it all together 
+At this point every machine has a consumption threshold (step #3) and every gate opens and closes correctly (steps #2 and #4).
+The last step is to tell GateKeeper **which gates to open and which to close for each machine**.
+This depends on how your dust collection ducts are laid out, so **everyone needs to define this for their own setup**.
 
+### 1. Map your machines to gates
+Draw your duct layout and, for each machine, write down which gates must be open so the air flows from that machine to the dust collector,
+and which gates must be closed so no suction is lost through other branches. For example:
 
-Putting it all together
+| Machine      | Gate A | Gate B | Gate C | Gate D |
+|--------------|--------|--------|--------|--------|
+| Circular saw | open   | closed | -      | -      |
+| Jointer      | closed | open   | closed | open   |
+| Band saw     | closed | open   | open   | closed |
+
+> Gates that don't affect a machine's line (`-`) can be left in whatever position they are in.
+
+### 2. Define the logic in main.cpp
+All of this lives in [main.cpp](./GateKeeper/src/main.cpp):
+
+- **Machines and gates**: declare one `MachineMonitor` per machine (pin + threshold) and one `BlastGate` per gate (motor pins + close switch).
+- **`loop()`**: this is the main logic. For each machine, when it is running, open and close the gates according to your table:
+  ```cpp
+  if (jointer.isRunning()) {
+    gateA.close();
+    gateB.open();
+    gateC.close();
+    gateD.open();
+  }
+  ```
+- **Helper functions**: update them so they match your machines and gates:
+  - `sampleConsumption()` and `noMachineRunning()`: list all your machines
+  - `allGatesClosed()`, `gatesAreNotMoving()` and `updateLights()`: list all your gates
+  - `jointerGatesOpen()`, `bandSawGatesOpen()`, ... : one per machine, matching your table (used for debug logging)
+- **`setup()`**: add/remove gates so all of them are closed and their position reset on startup.
+
+> NOTE: the logic assumes only **one machine runs at a time**. If two machines run together, the gates will follow the last
+> matching `if` block in `loop()`.
+
+### 3. Test
+Set `build_flags = -D DEBUG=1` in [platformio.ini](./GateKeeper/platformio.ini), upload the firmware and open the serial monitor. Turn each machine on and off, one at a time,
+and check that the right gates move and that the gates stay in place after the machine is turned off.
