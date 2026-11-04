@@ -16,16 +16,24 @@
   #define debugln(x)
 #endif
 
+// **********************
+// THE SETUP
+// **********************
 // Machine energy monitors
 #define JOINTER_PIN 3           // A3 (red)
 #define CIRCULAR_SAW_PIN 4      // A4 (yellow)
 #define BAND_SAW_PIN 5          // A5 (blue)
 
+// Max amperage level for each machine
+#define CIRCULAR_SAW_RUNNING 8
+#define JOINTER_RUNNING 14
+#define BAND_SAW_RUNNING 3.5
+
 // Gate switches
-#define SWITCH_GATE_A 14   // D14 green
-#define SWITCH_GATE_B 15   // D15 white
-#define SWITCH_GATE_C 18   // D18 purple
-#define SWITCH_GATE_D 19   // D19 black
+#define SWITCH_GATE_A 14        // D14 green
+#define SWITCH_GATE_B 15        // D15 white
+#define SWITCH_GATE_C 18        // D18 purple
+#define SWITCH_GATE_D 19        // D19 black
 
 // Gate motors
 #define MOTOR_A_STEP_PIN 54     // X - axis
@@ -48,11 +56,6 @@
 #define OPEN_ROTATION 7000L     // (recommended for DX100G Blast Gate 100mm with DRV8825 stepper driver)
 
 // if you are using some other driver and stepper motors this value might be different
-
-// Max amperage level for each machine
-#define CIRCULAR_SAW_RUNNING 8
-#define JOINTER_RUNNING 14
-#define BAND_SAW_RUNNING 3.5
 
 // Led lights PINs by gate
 #define LED_PIN_A 17
@@ -86,6 +89,7 @@ BlinkLight gateLightD(LED_PIN_D, LED_BLINK_MS);
 
 
 /** HELPER METHODS / alter according to your setup **/
+// Logic per machine / gate(s)
 /** Jointer line gates are OPEN, **/
 bool jointerGatesOpen() {
   return gateA.isClosed() && 
@@ -211,10 +215,8 @@ void debugGates() {
 
 void setup() {
 
-  if (DEBUG) {
-    Serial.begin(9600);
-    debugln("Starting up GateKeeper ... ");
-  }
+  Serial.begin(9600);
+  debugln("Starting up GateKeeper ... ");
 
   // Wait until measurements get down low levels (no machine should be running)
   sampleConsumption();
@@ -233,6 +235,7 @@ void setup() {
 
     updateLights();
 
+    // Close all gates to initial position
     if (!allGatesClosed()) {
       
       gateA.close();
@@ -245,6 +248,7 @@ void setup() {
       }
     }
 
+    // Sample consumption of each machine
     if (!noMachineRunning()) {      
       sampleConsumption();
       if (noMachineRunning()) {
@@ -283,14 +287,15 @@ void loop() {
 
     if (circularSaw.isRunning() && !circularSawGatesOpen()) {
       debugln("Circular saw running - trigger open A, close B");
-#if DEBUG
-      debugGates();
-#endif
     }
 
     if (bandSaw.isRunning() && !bandSawGatesOpen()) {
       debugln("Band saw running - trigger open B / C, close A / D");
     }
+
+    #if DEBUG
+      debugGates();
+    #endif
   }
 
   // The logic - set position of each gate if a machine is running
